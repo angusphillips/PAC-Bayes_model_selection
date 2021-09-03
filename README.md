@@ -1,3 +1,3 @@
 # PAC-Bayes_model_selection
-'Investigating PAC-Bayes Bound Minimisation as a Model Selection Criterion in Probabilistic Neural Networks'
-Code base for the MSc Dissertation
+Code base for the MSc Dissertation: 'Investigating PAC-Bayes Bound Minimisation as a Model Selection Criterion in Probabilistic Neural Networks'
+
