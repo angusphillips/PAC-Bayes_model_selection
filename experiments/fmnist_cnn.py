@@ -145,7 +145,7 @@ for d in depth:
             post_loss, post_err = testProbNN(prob, 'posterior-mean', data.test_loader, ensemble_samples, pmin, device)
             ens_loss, ens_err = testProbNN(prob, 'ensemble', data.test_loader, ensemble_samples, pmin, device)
             _, train_ens_err = testProbNN(prob, 'ensemble', data.train_loader_whole, ensemble_samples, pmin, device)
-            ce_bound, error_bound, _, _, _ = compute_bounds_and_metrics(prob, data.bound_loader_whole, 'classic', delta, delta_p, mc_samples, pmin, prior_weight, device)
+            ce_bound, error_bound, _, _, _ = compute_bounds_and_metrics(prob, data.bound_loader_whole, 'inverse-kl', delta, delta_p, mc_samples, pmin, prior_weight, device)
             n_parameters = count_parameters(prob)
             
             results.iloc[counter, :] = ['CNN', d, w, n_parameters, float(ce_bound), float(error_bound), stch_loss, stch_err, post_loss, post_err, ens_loss, ens_err, train_ens_err, error_prior, train_err_prior]

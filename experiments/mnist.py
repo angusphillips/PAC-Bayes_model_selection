@@ -41,7 +41,9 @@ prior_percentage = 0.7
 prior_epochs = 100
 train_epochs = 50
 batch_size = 256
-optimizer = 'Adam'
+optimizer = 'SGD'
+lr = 0.001
+momentum = 0.95
 pmin = 1e-4
 delta = 0.025
 delta_p = 0.01
@@ -101,7 +103,7 @@ for d in depth:
             ######## Prior means network ########
             # Train model
             prior = FCN(image_size, n_classes, w, d, dropout).to(device)
-            prior_optimizer = optim.Adam(prior.parameters())
+            prior_optimizer = optim.SGD(prior.parameters(), lr=lr, momentum=momentum)
             loss_progress = trainNN(prior, prior_optimizer, prior_epochs, data.prior_loader, pmin, device, verbose=False)
             
             # Store training metrics
@@ -114,7 +116,7 @@ for d in depth:
             ######## Prior variance network ########
             # Train model
             prior2 = ProbFCN(image_size, n_classes, w, d, sigma_prior, True, prior, device).to(device)
-            prior_optimizer2 = optim.Adam(prior2.parameters())
+            prior_optimizer2 = optim.SGD(prior2.parameters(), lr=lr, momentum=momentum)
             obj_progress, loss_progress, prior_var_progress = trainProbNN(prior2, prior_optimizer2, 'classic', True, prior_epochs, data.prior_loader, delta, pmin, prior_weight, device, verbose=False)
             
             # Store training metrics
@@ -129,7 +131,7 @@ for d in depth:
             
             ######## Probabilistic network ########
             prob = ProbFCN(image_size, n_classes, w, d, sigma_prior, False, prior2, device).to(device)
-            prob_optimizer = optim.Adam(prob.parameters())
+            prob_optimizer = optim.SGD(prob.parameters(), lr=lr, momentum=momentum)
             loss_progress, obj_progress = trainProbNN(prob, prob_optimizer, 'classic', False, train_epochs, data.train_loader, delta, pmin, prior_weight, device, verbose=False)
     
             prob_training_metrics.iloc[2*counter, :] = loss_progress
@@ -146,7 +148,7 @@ for d in depth:
             post_loss, post_err = testProbNN(prob, 'posterior-mean', data.test_loader, ensemble_samples, pmin, device)
             ens_loss, ens_err = testProbNN(prob, 'ensemble', data.test_loader, ensemble_samples, pmin, device)
             _, train_ens_err = testProbNN(prob, 'ensemble', data.train_loader_whole, ensemble_samples, pmin, device)
-            ce_bound, error_bound, _, _, _ = compute_bounds_and_metrics(prob, data.bound_loader_whole, 'classic', delta, delta_p, mc_samples, pmin, prior_weight, device)
+            ce_bound, error_bound, _, _, _ = compute_bounds_and_metrics(prob, data.bound_loader_whole, 'inverse-kl', delta, delta_p, mc_samples, pmin, prior_weight, device)
             n_parameters = count_parameters(prob)
             
             results.iloc[counter, :] = ['FCN', d, w, n_parameters, float(ce_bound), float(error_bound), stch_loss, stch_err, post_loss, post_err, ens_loss, ens_err, train_ens_err, error_prior, train_err_prior]
